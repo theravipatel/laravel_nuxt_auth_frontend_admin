@@ -21,7 +21,7 @@
             </div>
 
             <div class="mt-10">
-                <form action="#">
+                <form action="#" ref="loginForm" @submit.prevent="login">
                     <div class="flex flex-col mb-5">
                         <label for="email" class="mb-1 text-xs tracking-wide text-gray-600">E-Mail Address:</label>
                         <div class="relative">
@@ -134,6 +134,24 @@
     
 <script>
 export default {
-    name: 'LoginPage'
+    auth: 'guest',
+    name: 'LoginPage',
+    mounted() {
+        this.$axios.$get('/sanctum/csrf-cookie');
+    },
+    methods:{
+        async login() {
+            try {
+                const formData = new FormData(this.$refs.loginForm);
+                await this.$auth.loginWith('laravelSanctum',{ data:formData });
+
+                this.$router.push({
+                    path: '/',
+                });
+            } catch(err) {
+                console.log(err);
+            }
+        }
+    }
 }
 </script>

@@ -108,7 +108,7 @@ export default {
 </script>
 ``
 
-## 9) In header, login/register can be hide/show based on login status
+## 9) In header, login/register link can be hide/show based on login status
 ``
 <div class="" v-if="$auth.loggedIn == false">
     <NuxtLink  to="/login" class="inline-block py-2 px-4 text-gray-700 hover:bg-gray-100 rounded-lg" :class="{ 'bg-white': $route.path == '/login' }">Login</NuxtLink>
@@ -150,3 +150,49 @@ export default {
     name: 'DashboardPage',
 }
 ``
+
+## 11) Create logout method in Header.vue
+``
+export default {
+    name: 'HeaderPage',
+    methods: {
+        async logout() {
+            try {
+                await this.$auth.logout();
+                this.$router.push({
+                    path: '/login',
+                });
+            } catch(err) {
+                console.log(err);
+            }
+        }
+    },
+}
+``
+
+## 12) Create register method
+``
+export default {
+    auth: 'guest',
+    name: 'RegisterPage',
+    mounted() {
+        this.$axios.$get('/sanctum/csrf-cookie');
+    },
+    methods:{
+        register() {
+            try {
+                const formData = new FormData(this.$refs.registerForm);
+                this.$axios.post('/api/register',formData).then(res=>{
+                    this.$auth.loginWith('laravelSanctum',{ data:formData });
+
+                    this.$router.push({
+                        path: '/',
+                    });
+                });
+            } catch(err) {
+                console.log(err);
+            }
+        }
+    }
+}
+`` 

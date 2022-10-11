@@ -327,7 +327,7 @@
 
 <script>
 export default {
-    auth: 'false',
+    auth: false,
     name: 'IndexPage'
 }
 </script>

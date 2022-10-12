@@ -150,13 +150,18 @@ export default {
         async login() {
             try {
                 const formData = new FormData(this.$refs.loginForm);
-                await this.$auth.loginWith('laravelSanctum',{ data:formData });
-
-                this.$router.push({
-                    path: '/',
+                await this.$auth.loginWith('laravelSanctum',{ data:formData }).then(res=>{
+                    if (res.status == 200) {
+                        this.$router.push({
+                            path: '/',
+                        });
+                    } else {
+                        alert("Email or Password is wrong. Please try again.");
+                    }
                 });
             } catch(err) {
                 console.log(err);
+                alert("Email or Password is wrong. Please try again.");
             }
         }
     }

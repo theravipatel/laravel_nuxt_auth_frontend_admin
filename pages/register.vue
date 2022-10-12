@@ -174,14 +174,20 @@ export default {
             try {
                 const formData = new FormData(this.$refs.registerForm);
                 this.$axios.post('/api/register',formData).then(res=>{
-                    this.$auth.loginWith('laravelSanctum',{ data:formData });
+                    if (res.status == 200) {
+                        this.$auth.loginWith('laravelSanctum',{ data:formData });
 
-                    this.$router.push({
-                        path: '/',
-                    });
+                        this.$router.push({
+                            path: '/',
+                        });
+                    } else {
+                        console.log(res.data);
+                        alert("Something went wrong.");
+                    }
                 });
             } catch(err) {
                 console.log(err);
+                alert("Something went wrong.");
             }
         }
     }

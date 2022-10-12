@@ -21,6 +21,9 @@
             </div>
 
             <div class="mt-10">
+                <div class="pb-5 inline-block items-center font-medium text-red-500 text-xs ml-1">
+                    {{ formError }}
+                </div>
                 <form action="#" ref="generateCodeForm" @submit.prevent="generateCode">
                     <div class="flex flex-col mb-5">
                         <label for="email" class="mb-1 text-xs tracking-wide text-gray-600">E-Mail Address:</label>
@@ -116,6 +119,11 @@
 export default {
     auth: 'guest',
     name: 'ForgotPasswordPage',
+    data() {
+        return {
+            formError: '',
+        }
+    },
     mounted() {
         this.$axios.$get('/sanctum/csrf-cookie');
     },
@@ -124,12 +132,19 @@ export default {
             try {
                 const formData = new FormData(this.$refs.generateCodeForm);
                 this.$axios.post('/api/generate-code',formData).then(res=>{
-                    this.$router.push({
-                        path: '/code-check',
-                    });
+                    if (res.status == 200) {
+                        alert(res.data.message);
+                        this.$router.push({
+                            path: '/code-check',
+                        });
+                    } else {
+                        console.log(res.data);
+                        alert("Something went wrong.");
+                    }
                 });
             } catch(err) {
                 console.log(err);
+                alert("Something went wrong.");
             }
         }
     }

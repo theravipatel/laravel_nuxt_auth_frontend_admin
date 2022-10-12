@@ -22,6 +22,7 @@
 
             <div class="mt-10">
                 <form action="#" ref="resetPasswordForm" @submit.prevent="resetPassword">
+                    <input type="hidden" id="code" name="code" :value="param_code">
                     <div class="flex flex-col mb-6">
                         <label for="password"
                             class="mb-1 text-xs sm:text-sm tracking-wide text-gray-600">Password:</label>
@@ -76,7 +77,7 @@
                                 </span>
                             </div>
 
-                            <input id="confirm_password" type="password" name="confirm_password" class="
+                            <input id="password_confirmation" type="password" name="password_confirmation" class="
                         text-sm
                         placeholder-gray-500
                         pl-10
@@ -153,17 +154,29 @@
 export default {
     auth: 'guest',
     name: 'ResetPasswordPage',
+    data() {
+        return {
+            param_code: '',
+        }
+    },
     mounted() {
         this.$axios.$get('/sanctum/csrf-cookie');
+        this.param_code = this.$route.params.id;
     },
     methods:{
         async resetPassword() {
             try {
                 const formData = new FormData(this.$refs.resetPasswordForm);
                 this.$axios.post('/api/reset-password',formData).then(res=>{
-                    this.$router.push({
-                        path: '/login',
-                    });
+                    if (res.status == 200) {
+                        alert(res.data.message);
+                        this.$router.push({
+                            path: '/login',
+                        });
+                    } else {
+                        console.log(res.data);
+                        alert("Something went wrong.");
+                    }
                 });
             } catch(err) {
                 console.log(err);

@@ -124,9 +124,15 @@ export default {
             try {
                 const formData = new FormData(this.$refs.codeCheckForm);
                 this.$axios.post('/api/code-check',formData).then(res=>{
-                    this.$router.push({
-                        path: '/reset-password',
-                    });
+                    if (res.status == 200) {
+                        alert(res.data.message);
+                        this.$router.push({
+                            path: '/reset-password/'+res.data.code,
+                        });
+                    } else {
+                        console.log(res.data);
+                        alert("Something went wrong.");
+                    }
                 });
             } catch(err) {
                 console.log(err);

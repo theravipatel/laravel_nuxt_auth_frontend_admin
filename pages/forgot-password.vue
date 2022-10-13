@@ -20,9 +20,13 @@
                 Don't fret! Just type in your email and we will send you a code to reset your password!
             </div>
 
-            <div class="mt-10">
-                <div class="pb-5 inline-block items-center font-medium text-red-500 text-xs ml-1">
-                    {{ formError }}
+            <div class="mt-8">
+                <div :class="form_error.length?'':'hidden'" class="pb-5 inline-block items-center font-medium text-red-500 text-xs ml-1">
+                    <ul class="list-disc">
+                        <li v-for="item in form_error" :key="item">
+                        {{ item }}
+                        </li>
+                    </ul>
                 </div>
                 <form action="#" ref="generateCodeForm" @submit.prevent="generateCode">
                     <div class="flex flex-col mb-5">
@@ -42,7 +46,7 @@
                                 <i class="fas fa-at text-blue-500"></i>
                             </div>
 
-                            <input id="email" type="email" name="email" class="
+                            <input v-model="form.email" id="email" type="email" name="email" class="
                         text-sm
                         placeholder-gray-500
                         pl-10
@@ -73,7 +77,7 @@
                       transition
                       duration-150
                       ease-in
-                    ">
+                    " :disabled="submitted">
                             <span class="mr-2 uppercase">Submit</span>
                             <span>
                                 <svg class="h-6 w-6" fill="none" stroke-linecap="round" stroke-linejoin="round"
@@ -121,7 +125,11 @@ export default {
     name: 'ForgotPasswordPage',
     data() {
         return {
-            formError: '',
+            submitted: false,
+            form_error: [],
+            form: {
+                email: '',
+            }
         }
     },
     mounted() {
@@ -129,22 +137,27 @@ export default {
     },
     methods:{
         async generateCode() {
-            try {
+            
+            this.form_error = [];
+            for(const item in this.form) {
+                if(this.form[item] === '' || this.form[item].length === 0) {
+                    this.form_error.push(item + ' not valid');
+                }
+            }
+
+            if(this.form_error.length == 0) {
+                this.submitted = true;
                 const formData = new FormData(this.$refs.generateCodeForm);
                 this.$axios.post('/api/generate-code',formData).then(res=>{
-                    if (res.status == 200) {
-                        alert(res.data.message);
-                        this.$router.push({
-                            path: '/code-check',
-                        });
-                    } else {
-                        console.log(res.data);
-                        alert("Something went wrong.");
-                    }
+                    alert(res.data.message);
+                    this.$router.push({
+                        path: '/code-check',
+                    });
+                }).catch(err=> {
+                    this.submitted = false;
+                    console.log(err.response.data.message);
+                    this.form_error.push(err.response.data.message);
                 });
-            } catch(err) {
-                console.log(err);
-                alert("Something went wrong.");
             }
         }
     }

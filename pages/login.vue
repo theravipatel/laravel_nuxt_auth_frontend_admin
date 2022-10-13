@@ -20,7 +20,14 @@
                 Enter your credentials to get into account
             </div>
 
-            <div class="mt-10">
+            <div class="mt-8">
+                <div :class="form_error.length?'':'hidden'" class="pb-5 inline-block items-center font-medium text-red-500 text-xs ml-1">
+                    <ul class="list-disc">
+                        <li v-for="item in form_error" :key="item">
+                        {{ item }}
+                        </li>
+                    </ul>
+                </div>
                 <form action="#" ref="loginForm" @submit.prevent="login">
                     <div class="flex flex-col mb-5">
                         <label for="email" class="mb-1 text-xs tracking-wide text-gray-600">E-Mail Address:</label>
@@ -39,7 +46,7 @@
                                 <i class="fas fa-at text-blue-500"></i>
                             </div>
 
-                            <input id="email" type="email" name="email" class="
+                            <input v-model="form.email" id="email" type="email" name="email" class="
                         text-sm
                         placeholder-gray-500
                         pl-10
@@ -72,7 +79,7 @@
                                 </span>
                             </div>
 
-                            <input id="password" type="password" name="password" class="
+                            <input v-model="form.password" id="password" type="password" name="password" class="
                         text-sm
                         placeholder-gray-500
                         pl-10
@@ -92,7 +99,6 @@
                             </NuxtLink>                                  
                         </div>
                     </div>
-
                     <div class="flex w-full">
                         <button type="submit" class="
                       flex
@@ -110,7 +116,7 @@
                       transition
                       duration-150
                       ease-in
-                    ">
+                    " :disabled="submitted">
                             <span class="mr-2 uppercase">Login</span>
                             <span>
                                 <svg class="h-6 w-6" fill="none" stroke-linecap="round" stroke-linejoin="round"
@@ -143,12 +149,31 @@
 export default {
     auth: 'guest',
     name: 'LoginPage',
+    data() {
+        return {
+            submitted: false,
+            form_error: [],
+            form: {
+                email: '',
+                password: '',
+            }
+        }
+    },
     mounted() {
         this.$axios.$get('/sanctum/csrf-cookie');
     },
     methods:{
         async login() {
-            try {
+            
+            this.form_error = [];
+            for(const item in this.form) {
+                if(this.form[item] === '' || this.form[item].length === 0) {
+                    this.form_error.push(item + ' not valid');
+                }
+            }
+            
+            if(this.form_error.length == 0) {
+                this.submitted = true;
                 const formData = new FormData(this.$refs.loginForm);
                 await this.$auth.loginWith('laravelSanctum',{ data:formData }).then(res=>{
                     if (res.status == 200) {
@@ -156,12 +181,14 @@ export default {
                             path: '/',
                         });
                     } else {
-                        alert("Email or Password is wrong. Please try again.");
+                        this.submitted = false;
+                        this.form_error.push("Email or Password is wrong. Please try again.");
                     }
+                }).catch(err=>{
+                    this.submitted = false;
+                    console.log(err.response);
+                    this.form_error.push("Email or Password is wrong. Please try again.");
                 });
-            } catch(err) {
-                console.log(err);
-                alert("Email or Password is wrong. Please try again.");
             }
         }
     }

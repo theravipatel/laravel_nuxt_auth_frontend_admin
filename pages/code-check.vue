@@ -20,7 +20,14 @@
                 Validate the code we have sent you!
             </div>
 
-            <div class="mt-10">
+            <div class="mt-8">
+                <div :class="form_error.length?'':'hidden'" class="pb-5 inline-block items-center font-medium text-red-500 text-xs ml-1">
+                    <ul class="list-disc">
+                        <li v-for="item in form_error" :key="item">
+                        {{ item }}
+                        </li>
+                    </ul>
+                </div>
                 <form action="#" ref="codeCheckForm" @submit.prevent="codeCheck">
                     <div class="flex flex-col mb-5">
                         <label for="code" class="mb-1 text-xs tracking-wide text-gray-600">Code:</label>
@@ -39,7 +46,7 @@
                                 <i class="fas fa-at text-blue-500"></i>
                             </div>
 
-                            <input id="code" type="text" name="code" class="
+                            <input v-model="form.code" id="code" type="text" name="code" class="
                         text-sm
                         placeholder-gray-500
                         pl-10
@@ -70,7 +77,7 @@
                       transition
                       duration-150
                       ease-in
-                    ">
+                    " :disabled="submitted">
                             <span class="mr-2 uppercase">Submit</span>
                             <span>
                                 <svg class="h-6 w-6" fill="none" stroke-linecap="round" stroke-linejoin="round"
@@ -116,26 +123,40 @@
 export default {
     auth: 'guest',
     name: 'CodeCheckPage',
+    data() {
+        return {
+            submitted: false,
+            form_error: [],
+            form: {
+                code: '',
+            }
+        }
+    },
     mounted() {
         this.$axios.$get('/sanctum/csrf-cookie');
     },
     methods:{
         async codeCheck() {
-            try {
+
+            this.form_error = [];
+            for(const item in this.form) {
+                if(this.form[item] === '' || this.form[item].length === 0) {
+                    this.form_error.push(item + ' not valid');
+                }
+            }
+
+            if(this.form_error.length == 0) {
+                this.submitted = true;
                 const formData = new FormData(this.$refs.codeCheckForm);
                 this.$axios.post('/api/code-check',formData).then(res=>{
-                    if (res.status == 200) {
-                        alert(res.data.message);
-                        this.$router.push({
-                            path: '/reset-password/'+res.data.code,
-                        });
-                    } else {
-                        console.log(res.data);
-                        alert("Something went wrong.");
-                    }
+                    this.$router.push({
+                        path: '/reset-password/'+res.data.code,
+                    });
+                }).catch(err=> {
+                    this.submitted = false;
+                    console.log(err.response.data.message);
+                    this.form_error.push(err.response.data.message);
                 });
-            } catch(err) {
-                console.log(err);
             }
         }
     }

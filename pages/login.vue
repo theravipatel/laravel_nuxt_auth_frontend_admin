@@ -151,6 +151,7 @@ export default {
     name: 'LoginPage',
     data() {
         return {
+            ajax_loading: false,
             submitted: false,
             form_error: [],
             form: {
@@ -174,6 +175,7 @@ export default {
             
             if(this.form_error.length == 0) {
                 this.submitted = true;
+                this.ajax_loading = true;
                 const formData = new FormData(this.$refs.loginForm);
                 await this.$auth.loginWith('laravelSanctum',{ data:formData }).then(res=>{
                     if (res.status == 200) {

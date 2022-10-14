@@ -20,9 +20,16 @@
                 Reset your password!
             </div>
 
-            <div class="mt-10">
+            <div class="mt-8">
+                <div :class="form_error.length?'':'hidden'" class="pb-5 inline-block items-center font-medium text-red-500 text-xs ml-1">
+                    <ul class="list-disc">
+                        <li v-for="item in form_error" :key="item">
+                        {{ item }}
+                        </li>
+                    </ul>
+                </div>
                 <form action="#" ref="resetPasswordForm" @submit.prevent="resetPassword">
-                    <input type="hidden" id="code" name="code" :value="param_code">
+                    <input type="hidden" v-model="form.code" id="code" name="code">
                     <div class="flex flex-col mb-6">
                         <label for="password"
                             class="mb-1 text-xs sm:text-sm tracking-wide text-gray-600">Password:</label>
@@ -43,7 +50,7 @@
                                 </span>
                             </div>
 
-                            <input id="password" type="password" name="password" class="
+                            <input v-model="form.password" id="password" type="password" name="password" class="
                         text-sm
                         placeholder-gray-500
                         pl-10
@@ -77,7 +84,7 @@
                                 </span>
                             </div>
 
-                            <input id="password_confirmation" type="password" name="password_confirmation" class="
+                            <input v-model="form.password_confirmation" id="password_confirmation" type="password" name="password_confirmation" class="
                         text-sm
                         placeholder-gray-500
                         pl-10
@@ -108,7 +115,7 @@
                       transition
                       duration-150
                       ease-in
-                    ">
+                    " :disabled="submitted">
                             <span class="mr-2 uppercase">Submit</span>
                             <span>
                                 <svg class="h-6 w-6" fill="none" stroke-linecap="round" stroke-linejoin="round"
@@ -156,30 +163,42 @@ export default {
     name: 'ResetPasswordPage',
     data() {
         return {
-            param_code: '',
+            submitted: false,
+            form_error: [],
+            form: {
+                code: '',
+                password: '',
+                password_confirmation: '',
+            }
         }
     },
     mounted() {
         this.$axios.$get('/sanctum/csrf-cookie');
-        this.param_code = this.$route.params.id;
+        this.form.code = this.$route.params.id;
     },
     methods:{
         async resetPassword() {
-            try {
+
+            this.form_error = [];
+            for(const item in this.form) {
+                if(this.form[item] === '' || this.form[item].length === 0) {
+                    this.form_error.push(item + ' not valid');
+                }
+            }
+
+            if(this.form_error.length == 0) {
+                this.submitted = true;
                 const formData = new FormData(this.$refs.resetPasswordForm);
                 this.$axios.post('/api/reset-password',formData).then(res=>{
-                    if (res.status == 200) {
-                        alert(res.data.message);
-                        this.$router.push({
-                            path: '/login',
-                        });
-                    } else {
-                        console.log(res.data);
-                        alert("Something went wrong.");
-                    }
+                    alert(res.data.message);
+                    this.$router.push({
+                        path: '/login',
+                    });
+                }).catch(err=> {
+                    this.submitted = false;
+                    console.log(err.response.data.message);
+                    this.form_error.push(err.response.data.message);
                 });
-            } catch(err) {
-                console.log(err);
             }
         }
     }

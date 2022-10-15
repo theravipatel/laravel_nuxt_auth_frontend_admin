@@ -73,7 +73,7 @@ export default {
   },
   
   loading: {
-      color: 'black',
+      color: '#311B92',
       height: '5px',
       throttle: 0,
   },

@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="ajax-loader" v-if="ajax_loading"></div>
+        <div class="ajax-loader" v-if="$store.state.ajax_loading"></div>
         <div class="bg-gray-200 px-4 py-4">
             <div class="w-full md:max-w-6xl md:mx-auto md:flex md:items-center md:justify-between">
                 <div>
@@ -29,11 +29,6 @@
 <script>
 export default {
     name: 'HeaderPage',
-    data() {
-        return {
-            ajax_loading: false,
-        }
-    },
     methods: {
         async logout() {
             try {

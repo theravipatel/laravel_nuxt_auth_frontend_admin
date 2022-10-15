@@ -151,7 +151,6 @@ export default {
     name: 'LoginPage',
     data() {
         return {
-            ajax_loading: false,
             submitted: false,
             form_error: [],
             form: {
@@ -175,9 +174,10 @@ export default {
             
             if(this.form_error.length == 0) {
                 this.submitted = true;
-                this.ajax_loading = true;
+                this.$store.commit('setAjaxLoadingStatus_store', true);
                 const formData = new FormData(this.$refs.loginForm);
                 await this.$auth.loginWith('laravelSanctum',{ data:formData }).then(res=>{
+                    this.$store.commit('setAjaxLoadingStatus_store', false);
                     if (res.status == 200) {
                         this.$router.push({
                             path: '/',
@@ -187,6 +187,7 @@ export default {
                         this.form_error.push("Email or Password is wrong. Please try again.");
                     }
                 }).catch(err=>{
+                    this.$store.commit('setAjaxLoadingStatus_store', false);
                     this.submitted = false;
                     console.log(err.response);
                     this.form_error.push("Email or Password is wrong. Please try again.");

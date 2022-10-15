@@ -188,13 +188,16 @@ export default {
 
             if(this.form_error.length == 0) {
                 this.submitted = true;
+                this.$store.commit('setAjaxLoadingStatus_store', true);
                 const formData = new FormData(this.$refs.resetPasswordForm);
                 this.$axios.post('/api/reset-password',formData).then(res=>{
+                    this.$store.commit('setAjaxLoadingStatus_store', false);
                     alert(res.data.message);
                     this.$router.push({
                         path: '/login',
                     });
                 }).catch(err=> {
+                    this.$store.commit('setAjaxLoadingStatus_store', false);
                     this.submitted = false;
                     console.log(err.response.data.message);
                     this.form_error.push(err.response.data.message);

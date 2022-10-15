@@ -147,12 +147,15 @@ export default {
 
             if(this.form_error.length == 0) {
                 this.submitted = true;
+                this.$store.commit('setAjaxLoadingStatus_store', true);
                 const formData = new FormData(this.$refs.codeCheckForm);
                 this.$axios.post('/api/code-check',formData).then(res=>{
+                    this.$store.commit('setAjaxLoadingStatus_store', false);
                     this.$router.push({
                         path: '/reset-password/'+res.data.code,
                     });
                 }).catch(err=> {
+                    this.$store.commit('setAjaxLoadingStatus_store', false);
                     this.submitted = false;
                     console.log(err.response.data.message);
                     this.form_error.push(err.response.data.message);

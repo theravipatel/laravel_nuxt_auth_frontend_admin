@@ -20,7 +20,14 @@
                 Enter your details to create your account
             </div>
 
-            <div class="mt-10">
+            <div class="mt-8">
+                <div :class="form_error.length?'':'hidden'" class="pb-5 inline-block items-center font-medium text-red-500 text-xs ml-1">
+                    <ul class="list-disc">
+                        <li v-for="item in form_error" :key="item">
+                        {{ item }}
+                        </li>
+                    </ul>
+                </div>
                 <form action="#" ref="registerForm" @submit.prevent="register">
                     <div class="flex flex-col mb-5">
                         <label for="name" class="mb-1 text-xs tracking-wide text-gray-600">Name:</label>
@@ -39,7 +46,7 @@
                                 <i class="fas fa-user text-blue-500"></i>
                             </div>
 
-                            <input id="name" type="text" name="name" class="
+                            <input v-model="form.name" id="name" type="text" name="name" class="
                         text-sm
                         placeholder-gray-500
                         pl-10
@@ -69,7 +76,7 @@
                                 <i class="fas fa-at text-blue-500"></i>
                             </div>
 
-                            <input id="email" type="email" name="email" class="
+                            <input v-model="form.email" id="email" type="email" name="email" class="
                         text-sm
                         placeholder-gray-500
                         pl-10
@@ -102,7 +109,7 @@
                                 </span>
                             </div>
 
-                            <input id="password" type="password" name="password" class="
+                            <input v-model="form.password" id="password" type="password" name="password" class="
                         text-sm
                         placeholder-gray-500
                         pl-10
@@ -133,7 +140,7 @@
                       transition
                       duration-150
                       ease-in
-                    ">
+                    " :disabled="submitted">
                             <span class="mr-2 uppercase">Sign Up</span>
                             <span>
                                 <svg class="h-6 w-6" fill="none" stroke-linecap="round" stroke-linejoin="round"
@@ -166,28 +173,46 @@
 export default {
     auth: 'guest',
     name: 'RegisterPage',
+    data() {
+        return {
+            submitted: false,
+            form_error: [],
+            form: {
+                name: '',
+                email: '',
+                password: '',
+            }
+        }
+    },
     mounted() {
         this.$axios.$get('/sanctum/csrf-cookie');
     },
     methods:{
         register() {
-            try {
+            
+            this.form_error = [];
+            for(const item in this.form) {
+                if(this.form[item] === '' || this.form[item].length === 0) {
+                    this.form_error.push(item + ' not valid');
+                }
+            }
+
+            if(this.form_error.length == 0) {
+                this.submitted = true;
+                this.$store.commit('setAjaxLoadingStatus_store', true);
                 const formData = new FormData(this.$refs.registerForm);
                 this.$axios.post('/api/register',formData).then(res=>{
-                    if (res.status == 200) {
-                        this.$auth.loginWith('laravelSanctum',{ data:formData });
-
-                        this.$router.push({
-                            path: '/',
-                        });
-                    } else {
-                        console.log(res.data);
-                        alert("Something went wrong.");
-                    }
+                    this.$store.commit('setAjaxLoadingStatus_store', false);
+                    this.$auth.loginWith('laravelSanctum',{ data:formData });
+                    this.$router.push({
+                        path: '/',
+                    });
+                }).catch(err=> {
+                    this.$store.commit('setAjaxLoadingStatus_store', false);
+                    this.submitted = false;
+                    console.log(err.response.data.message);
+                    this.form_error.push(err.response.data.message);
                 });
-            } catch(err) {
-                console.log(err);
-                alert("Something went wrong.");
             }
         }
     }

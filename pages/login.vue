@@ -180,7 +180,7 @@ export default {
                     this.$store.commit('setAjaxLoadingStatus_store', false);
                     if (res.status == 200) {
                         this.$router.push({
-                            path: '/',
+                            path: '/dashboard',
                         });
                     } else {
                         this.submitted = false;
